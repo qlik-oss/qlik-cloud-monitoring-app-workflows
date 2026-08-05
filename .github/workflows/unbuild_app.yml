@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    if: ${{ github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' }}
+      pull-requests: read
     outputs:
       assets: ${{ steps.filter.outputs.assets }}
     steps:
