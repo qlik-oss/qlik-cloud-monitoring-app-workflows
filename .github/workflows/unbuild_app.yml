@@ -22,7 +22,7 @@ jobs:
       contents: write
     if: ${{ github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ inputs.checkout_ref != '' && inputs.checkout_ref || github.head_ref || github.ref_name }}
