@@ -37,11 +37,17 @@ jobs:
         run: ./qlik version
         
       - name: Create context in qlik-cli
+        env:
+          QLIK_MONITORING_TENANT: ${{ vars.QLIK_CLOUD_MONITORING_TENANT }}
+          QLIK_MONITORING_OAUTH_ID: ${{ vars.QLIK_CLOUD_MONITORING_OAUTH_ID }}
+          QLIK_MONITORING_OAUTH_SECRET: ${{ secrets.QLIK_CLOUD_MONITORING_OAUTH_SECRET }}
         run: |
+            echo "::add-mask::$QLIK_MONITORING_TENANT"
+            echo "::add-mask::$QLIK_MONITORING_OAUTH_ID"
             ./qlik context create veritenant \
-            --server ${{ vars.QLIK_CLOUD_MONITORING_TENANT }} \
-            --oauth-client-id ${{ vars.QLIK_CLOUD_MONITORING_OAUTH_ID }} \
-            --oauth-client-secret ${{ secrets.QLIK_CLOUD_MONITORING_OAUTH_SECRET }} \
+            --server "$QLIK_MONITORING_TENANT" \
+            --oauth-client-id "$QLIK_MONITORING_OAUTH_ID" \
+            --oauth-client-secret "$QLIK_MONITORING_OAUTH_SECRET" \
             --server-type cloud
           
       - name: Select context
