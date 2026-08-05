@@ -8,10 +8,6 @@ on:
         required: false
         type: string
     secrets:
-      QLIK_CLOUD_MONITORING_TENANT:
-        required: true
-      QLIK_CLOUD_MONITORING_OAUTH_ID:
-        required: true
       QLIK_CLOUD_MONITORING_OAUTH_SECRET:
         required: true
   
@@ -43,8 +39,8 @@ jobs:
       - name: Create context in qlik-cli
         run: |
             ./qlik context create veritenant \
-            --server ${{ secrets.QLIK_CLOUD_MONITORING_TENANT }} \
-            --oauth-client-id ${{ secrets.QLIK_CLOUD_MONITORING_OAUTH_ID }} \
+            --server ${{ vars.QLIK_CLOUD_MONITORING_TENANT }} \
+            --oauth-client-id ${{ vars.QLIK_CLOUD_MONITORING_OAUTH_ID }} \
             --oauth-client-secret ${{ secrets.QLIK_CLOUD_MONITORING_OAUTH_SECRET }} \
             --server-type cloud
           
