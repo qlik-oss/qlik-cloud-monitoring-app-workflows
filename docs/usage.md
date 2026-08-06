@@ -14,6 +14,7 @@ uses: qlik-oss/qlik-cloud-monitoring-app-workflows/.github/workflows/comment_che
 - The caller repository should store `.qvf` files in `assets/`.
 - The `unbuild_app` workflow writes generated output to `diff/` and pushes changes back to the checked out branch.
 - Consumer repositories should enable Dependabot updates for `github-actions` so workflow tag bumps are proposed automatically.
+- Both `comment_checklist_pr` and `unbuild_app` run a `changes` job that checks whether any file under `assets/**` changed, and skip their main job when it hasn't. Callers do not need their own `paths` filter for this.
 
 ## Workflow: comment_checklist_pr
 
@@ -39,6 +40,7 @@ jobs:
 - This workflow is intended for pull request events.
 - The caller job must run in a repository that has a `release.json` file with a `name` property.
 - The reusable workflow skips runs triggered by `dependabot[bot]` and `renovate[bot]`.
+- The `verify` job only runs when a file under `assets/**` changed; the workflow's `changes` job checks this automatically.
 
 ## Workflow: draft_release_on_main
 
@@ -85,8 +87,6 @@ on:
   pull_request:
     types: [opened, synchronize]
     branches: ["main"]
-    paths:
-      - "assets/**"
 
 jobs:
   unbuild:
@@ -94,8 +94,6 @@ jobs:
       contents: write
     uses: qlik-oss/qlik-cloud-monitoring-app-workflows/.github/workflows/unbuild_app.yml@workflows-v1.0.0
     secrets:
-      QLIK_CLOUD_MONITORING_TENANT: ${{ secrets.QLIK_CLOUD_MONITORING_TENANT }}
-      QLIK_CLOUD_MONITORING_OAUTH_ID: ${{ secrets.QLIK_CLOUD_MONITORING_OAUTH_ID }}
       QLIK_CLOUD_MONITORING_OAUTH_SECRET: ${{ secrets.QLIK_CLOUD_MONITORING_OAUTH_SECRET }}
 ```
 
@@ -122,18 +120,18 @@ jobs:
     with:
       checkout_ref: ${{ inputs.checkout_ref }}
     secrets:
-      QLIK_CLOUD_MONITORING_TENANT: ${{ secrets.QLIK_CLOUD_MONITORING_TENANT }}
-      QLIK_CLOUD_MONITORING_OAUTH_ID: ${{ secrets.QLIK_CLOUD_MONITORING_OAUTH_ID }}
       QLIK_CLOUD_MONITORING_OAUTH_SECRET: ${{ secrets.QLIK_CLOUD_MONITORING_OAUTH_SECRET }}
 ```
 
 ### Notes
 
-- Required secrets:
+- Required secret:
+  - `QLIK_CLOUD_MONITORING_OAUTH_SECRET`
+- Required repository/organization variables (`vars`, not secrets):
   - `QLIK_CLOUD_MONITORING_TENANT`
   - `QLIK_CLOUD_MONITORING_OAUTH_ID`
-  - `QLIK_CLOUD_MONITORING_OAUTH_SECRET`
 - The caller job needs `contents: write` permission because the workflow commits and pushes the generated `diff/` output.
+- The `unbuild` job only runs when a file under `assets/**` changed; the workflow's `changes` job checks this automatically, so the caller does not need its own `paths` filter.
 
 ## Versioning
 
