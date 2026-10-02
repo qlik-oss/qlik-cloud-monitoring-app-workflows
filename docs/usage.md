@@ -128,7 +128,7 @@ jobs:
 - Required secret:
   - `QLIK_CLOUD_MONITORING_OAUTH_SECRET`
 - Required repository/organization variables (`vars`, not secrets):
-  - `QLIK_CLOUD_MONITORING_TENANT`
+  - `QLIK_CLOUD_MONITORING_TENANT` (must be a full URL including `https://`, e.g. `https://example.us.qlikcloud.com`; a bare hostname makes the app import fail)
   - `QLIK_CLOUD_MONITORING_OAUTH_ID`
 - The caller job needs `contents: write` permission because the workflow commits and pushes the generated `diff/` output.
 - The `unbuild` job only runs when a file under `assets/**` changed; the workflow's `changes` job checks this automatically, so the caller does not need its own `paths` filter.
