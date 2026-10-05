@@ -50,7 +50,7 @@ jobs:
           
       - name: Download qlik-cli and unzip
         run: |
-            wget https://github.com/qlik-oss/qlik-cli/releases/download/v2.25.0/qlik-Linux-x86_64.tar.gz -O qlik-cli.tar.gz
+            wget https://github.com/qlik-oss/qlik-cli/releases/download/v3.3.0/qlik-Linux-x86_64.tar.gz -O qlik-cli.tar.gz
             tar -xf qlik-cli.tar.gz
             rm qlik-cli.tar.gz
             chmod +x qlik
@@ -75,6 +75,16 @@ jobs:
       - name: Select context
         run: ./qlik context use veritenant
 
+      - name: Verify tenant connection
+        run: |
+            # Output is discarded so nothing about the tenant is printed; only the exit status is reported.
+            if ./qlik raw get v1/users/me --output-file /dev/null > /dev/null 2>&1; then
+                echo "Tenant connection OK"
+            else
+                echo "::error::Could not authenticate to the tenant (check tenant URL, OAuth client ID and secret)"
+                exit 1
+            fi
+
       - name: Delete any existing diff dir
         run: rm -rf diff
 
@@ -89,8 +99,12 @@ jobs:
             for FILE in ./assets/*.qvf; do
                 FILENAME=$(basename "$FILE")
                 cp "$FILE" ./import.qvf
-                APP_ID=$(./qlik raw post v1/apps/import --body-file "./import.qvf" | jq -r '.attributes.id')
+                APP_ID=$(./qlik raw post v1/apps/import --body-file "./import.qvf" | jq -r '.attributes.id // empty')
                 echo "Imported appId $APP_ID"
+                if [ -z "$APP_ID" ]; then
+                    echo "::error::App import returned no app id (is the tenant URL a full https:// URL?)"
+                    exit 1
+                fi
                 ./qlik app unbuild --app "$APP_ID" --dir "./diff/$FILENAME" --no-data
                 find "./diff/$FILENAME" -type f | while read -r UBFILEA; do
                     if [[ -f "$UBFILEA" ]]; then
